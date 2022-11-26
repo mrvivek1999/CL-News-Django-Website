@@ -1,0 +1,197 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+
+{% block content %}
+<div class="container-fluid p-3 mx-auto">
+    <div class="row">
+        <div class="col-md-9 p-5 border-end mt-5">
+            <h1 class="display1">Write your Article ✒️</h1>
+            <form method="post" action="{% url 'create' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form article_form %}
+                <!-- this line is important -->
+                {{ article_form.media }}
+                {% bootstrap_button "Save" type="submit" %}
+            </form>
+        </div>
+        <div class="col-md-3 px-5 mt-5 border-end">
+            
+
+            <div class="card mb-3 border-0">
+                <div class="card-header bg-transparent border-0">
+                    <h3>Add New Category</h3>
+                </div>
+                <form method="post" class="card-body" id="catform">
+                    {% csrf_token %}
+                    {% bootstrap_form category_form %}
+                    {% bootstrap_button "Add Category" type="submit" %}
+                </form>
+            </div>
+            <div class="card border-0">
+                <div class="card-header bg-transparent border-0">
+                    <h3 class="card-title">Add Tags</h3>
+                </div>
+                <form action="" method="post" class="card-body" id="tagform">
+                    {% csrf_token %}
+                    {% bootstrap_form tag_form %}
+                    {% bootstrap_button "Add Tags" type="submit" %}
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block css %}
+<style>
+    #id_tags,
+    #id_status {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-content: center;
+        justify-content: flex-start;
+        align-items: flex-end;
+    }
+
+    #id_tags>.form-check,
+    #id_status>.form-check {
+        margin: 0 2rem 1rem 0;
+    }
+</style>
+{% endblock %}
+
+
+{% block js %}
+<script>
+    
+tinymce.init({
+  selector: 'textarea',
+  plugins: 'image code',
+  toolbar: 'undo redo | link image | code',
+  /* enable title field in the Image dialog*/
+  image_title: true,
+  /* enable automatic uploads of images represented by blob or data URIs*/
+  automatic_uploads: true,
+  /*
+    URL of our upload handler (for more details check: https://www.tiny.cloud/docs/configure/file-image-upload/#images_upload_url)
+    images_upload_url: 'postAcceptor.php',
+    here we add custom filepicker only to Image dialog
+  */
+  file_picker_types: 'image',
+  /* and here's our custom image picker*/
+  file_picker_callback: function (cb, value, meta) {
+    var input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+
+    /*
+      Note: In modern browsers input[type="file"] is functional without
+      even adding it to the DOM, but that might not be the case in some older
+      or quirky browsers like IE, so you might want to add it to the DOM
+      just in case, and visually hide it. And do not forget do remove it
+      once you do not need it anymore.
+    */
+
+    input.onchange = function () {
+      var file = this.files[0];
+
+      var reader = new FileReader();
+      reader.onload = function () {
+        /*
+          Note: Now we need to register the blob in TinyMCEs image blob
+          registry. In the next release this part hopefully won't be
+          necessary, as we are looking to handle it internally.
+        */
+        var id = 'blobid' + (new Date()).getTime();
+        var blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+        var base64 = reader.result.split(',')[1];
+        var blobInfo = blobCache.create(id, file, base64);
+        blobCache.add(blobInfo);
+
+        /* call the callback and populate the Title field with the file name */
+        cb(blobInfo.blobUri(), { title: file.name });
+      };
+      reader.readAsDataURL(file);
+    };
+
+    input.click();
+  },
+  content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+});
+
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.1.min.js"
+    integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+<script>
+    let catform = $('#catform');
+    catform.submit((e) => {
+        e.preventDefault();
+        $.ajax({
+            type: "post",
+            url: "{% url 'cat_create' %}",
+            data: catform.serialize(),
+            dataType: "json",
+            success: function (response) {
+                status = response.status;
+                id = response.id;
+                name = response.name;
+                if (status === 'success') {
+                    // alert('Category Added Successfully');
+                    let category = $('#id_category');
+                    category.append(`<option value="${id}">${name}</option>`);
+                    catform.find('input').val('');
+                    // add a tick mark in the form
+                    catform.append(`<i class="bi bi-check-circle-fill text-success px-3"></i>`);
+                    // timeout to remove the tick mark
+                    setTimeout(() => {
+                        tagform.find('i').remove();
+                    }, 2000);
+                }
+                else {
+                    alert(status);
+                }
+            }
+        });
+    });
+
+    let tagform = $('#tagform');
+    tagform.submit((e) => {
+        e.preventDefault();
+        $.ajax({
+            type: "post",
+            url: "{% url 'tag_create' %}",
+            data: tagform.serialize(),
+            dataType: "json",
+            success: function (response) {
+                status = response.status;
+                id = response.id;
+                name = response.name;
+                if (status === 'success') {
+                    let tags = $('#id_tags');
+                    tag_checkbox_snippet = `<div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="tags" id="id_tags_${id - 1}" value="${id}">
+                    <label class="form-check-label" for="id_tags_${id - 1}">${name}</label>
+                    </div>
+                    `
+                    tags.append(tag_checkbox_snippet);
+                    tagform.find('input').val('');
+                    // add a tick mark in the form
+                    tagform.append(`<i class="bi bi-check-circle-fill text-success px-3"></i>`);
+                    // timeout to remove the tick mark
+                    setTimeout(() => {
+                        tagform.find('i').remove();
+                    }, 2000);
+                }
+                else {
+                    alert(status);
+                }
+            }
+        });
+    });
+
+</script>
+{% endblock %}

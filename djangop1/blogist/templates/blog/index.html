@@ -1,0 +1,88 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="p-5 mb-4 bg-light shadow-sm hero">
+    <div class="container py-5">
+        <h1 class="fw-bold display-1">
+            CL Ne<span class="text-success">ws</span>
+        </h1>
+        <p class="col-md-8 fs-4">
+            Welcome to Cricket League News , a awesome news Website for <b><span class="text-success">Cricket Lovers</span></b> 
+        </p>
+        <div class="search-wrapper">
+            <div class="container search-btn">
+                <button class="btn btn-outline-dark btn-lg" type="button">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+            <div class="container d-none" id="search-box">
+                <form class="d-flex" action="{% url 'search' %}">
+                    <input class="form-control form-control-lg me-2 px-5 py-1" type="search" placeholder="Search"
+                        aria-label="Search" name="q">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button class="btn btn-outline-dark" type="submit">
+                            <i class="bi bi-search h4"></i>
+                        </button>
+                        <button class="btn btn-dark" type="button" id="close-search">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+
+        {% for item in articles %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <a href="{% url 'view' item.id %}" class="nav-link">
+                            {{item.title}}
+                        </a>
+                    </h3>
+                </div>
+                <div class="card-image">
+                 <img src="{{item.thumbnail.url}}" alt="" width="415px">   
+                </div>
+                <div class="card-body">
+
+                    <p>{{item.content|safe|truncatechars:300 }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>no articles published</p>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}
+{% block css %}
+<style>
+    .hero {
+        background-color: #424242 !important;
+    }
+</style>
+{% endblock %}
+{% block js %}
+<script>
+    let searchBtn = document.querySelector('.search-btn');
+    let searchBox = document.querySelector('#search-box');
+    let closeSearch = document.querySelector('#close-search');
+
+    searchBtn.addEventListener('click', () => {
+        searchBox.classList.toggle('d-none');
+        searchBtn.classList.toggle('d-none');
+    });
+    closeSearch.addEventListener('click', () => {
+        searchBox.classList.toggle('d-none');
+        searchBtn.classList.toggle('d-none');
+    });
+</script>
+{% endblock %}

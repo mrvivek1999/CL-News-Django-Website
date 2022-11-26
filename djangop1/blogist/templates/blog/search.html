@@ -1,0 +1,54 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+<div class="p-1 mb-4 bg-light  hero" >
+    <div class="container-fluid py-5  text-center">
+        <h1 class="display-5 fw-bold">Search results for `{{q}}`</h1>
+        <p class="col-md-12 fs-4 ">
+            <b>total articles</b>: {{articles|length}} articles
+        </p>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+
+            {% for item in articles %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        <a href="{% url 'view' item.id %}" class="nav-link">
+                            {{item.title}}
+                        </a>
+                    </h4>
+                    
+                    <a href="{% url 'view' item.id %}" class="btn btn-primary">
+                        Read more
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        No articles found related to `{{q}}`
+                    </h4>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block css %}
+<style>
+    .hero {
+        background-color: #424242 !important;
+    }
+</style>
+{% endblock %}
+
+
+
+    
