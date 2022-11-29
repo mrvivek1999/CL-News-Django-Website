@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from .forms import LoginForm, RegisterForm
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
+from django.core.mail import send_mail
 
 User = get_user_model() # get the user model
 
@@ -31,6 +32,13 @@ def register_view(request):
         if password1 == password2:
             user = User.objects.create_user(username, email, password1)
             user.save()
+            send_mail(
+                'CL News sign up seccessful',
+                'Thank You For Registration in CL News',
+                'bajpaivivek833@gmail.com',
+                ['{{item.email}}'],
+                fail_silently=False,
+            )
             messages.success(request, 'Registration Successful')
             return redirect('/') # redirect to home page
         else:
